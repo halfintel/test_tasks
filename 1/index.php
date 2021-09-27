@@ -7,10 +7,12 @@ ini_set('error_log', __DIR__ . '/logs/phpErrors__' . date("d-m-y") . '.log');
 ini_set('log_errors', 1);
 
 
-require_once('FactoryRobot.php');
-require_once('MergeRobot.php');
-require_once('Robot1.php');
-require_once('Robot2.php');
+require_once('autoload.php');
+require_once('debug.php');
+use robots\FactoryRobot;
+use robots\Robot1;
+use robots\Robot2;
+use robots\MergeRobot;
 
 
 $main = new MainClass();
@@ -24,27 +26,22 @@ class MainClass {
         $factory->addType(new Robot2());
 
 
-        $this->output($factory->createRobot1(5));
-        $this->output($factory->createRobot2(2));
+        debug($factory->createRobot1(5));
+        debug($factory->createRobot2(2));
 
 
         $mergeRobot = new MergeRobot();
-        $mergeRobot->addRobot(new Robot2());
+        $mergeRobot->addRobot([new Robot2()]);
         $mergeRobot->addRobot($factory->createRobot2(2));
 
         $factory->addType($mergeRobot);
         $robots = $factory->createMergeRobot(1);
         $res = reset($robots);
 
-        $this->output($res);
-        $this->output( $res->getSpeed() );
-        $this->output( $res->getWeight() );
+        debug($res);
+        debug( $res->getSpeed() );
+        debug( $res->getWeight() );
         
     }
-    function output($arr1 = null, $arr2 = null) {
-        echo '<pre>';
-        print_r($arr1);
-        print_r($arr2);
-        echo '</pre>';
-    }
+    
 } 
