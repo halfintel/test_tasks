@@ -2,12 +2,12 @@
 
 // преобразует числа 1-288885 в 'A0001'-'ZZZZZ'
 class Converter {
-    const CODE_LENGTH = 5;
-    protected $upperArr;//массив символов A-Z
-    protected $countUpperArr;//количество символов в массиве upperArr
-    protected $coefficientMap = [];//массив коэффициентов для получения символов кода
-    protected $number;//полученное число
-    protected $code;//возвращаемый код
+    const CODE_LENGTH = 5;// количество символов в коде
+    protected $upperArr;// массив символов A-Z
+    protected $countUpperArr;// количество символов в массиве upperArr
+    protected $coefficientMap = [];// массив коэффициентов для получения символов кода
+    protected $number;// полученное число
+    protected $code;// возвращаемый код
 
     function __construct($number) {
         $this->validate($number);
