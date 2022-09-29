@@ -1,5 +1,9 @@
 # backend:
 <br />
+cd 5/api
+<br />
+change config.php
+<br />
 cd 5/api/server
 <br />
 php -S localhost:8001
