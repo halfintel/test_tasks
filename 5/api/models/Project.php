@@ -65,7 +65,7 @@ class Project {
             }
             foreach ($data['data'] as $project){
                 if (empty($project['attributes']['employer']['id'])){
-                    continue;
+                    continue;// TODO: обробити проекти без замовників
                 }
                 $projects[] = [
                     'id' => $project['id'],
