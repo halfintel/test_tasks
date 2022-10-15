@@ -2,5 +2,9 @@
 <br />
 cd 6
 <br />
-node app.ts
+npm install
+<br />
+change web3Url in config.json
+<br />
+ts-node-esm app.ts
 <br /><br />
