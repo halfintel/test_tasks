@@ -1,0 +1,10 @@
+{
+    "moduleResolution": "Node",
+    "noImplicitAny": false,
+    "compilerOptions": {
+        "moduleResolution":"node",
+        "esModuleInterop": true,
+        "module": "es6",
+        "target": "es2020"
+    }
+}
