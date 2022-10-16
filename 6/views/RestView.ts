@@ -7,7 +7,7 @@ export class RestView {
         this.res = res;
     }
 
-    setResponse(status: number, message:any) {
+    setResponse(status: number, message:any):void {
         this.res.status(status);
         this.res.send({message: message});
     }

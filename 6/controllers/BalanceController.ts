@@ -1,10 +1,12 @@
-import { Web3Model } from '../models/Web3Model.js';
-import { RestView } from '../views/RestView.js';
 import { Request, Response } from 'express';
-import fs from 'fs';
+import { Web3Model } from '../models/Web3Model.js';
+import { ConfigModel } from '../models/ConfigModel.js';
+import { JsonFileModel } from '../models/JsonFileModel.js';
+import { RestView } from '../views/RestView.js';
+
 
 export class BalanceController {
-    static async getBalance(req:Request, res:Response) {
+    static async getBalance(req:Request, res:Response):Promise<void> {
         const restView = new RestView(res);
         try {
             const web3 = new Web3Model;
@@ -19,35 +21,18 @@ export class BalanceController {
         }
     }
 
-    static async setBalanceToFile() {
+    static async setBalanceToFile():Promise<void> {
         try {
             console.log('setBalanceToFile');
 
-            const configJson = fs.readFileSync("./config.json", "utf8");// TODO: move to another class
-            const config = JSON.parse(configJson);
-
             const web3 = new Web3Model;
-            const balance = await web3.getAllBalances(config.address);
-            const data = JSON.stringify({
-                'date': new Date().toISOString(),
-                'balances': balance
-            });
-            const dir = './files';
-            const fileName = dir + '/balances.json';
-            if (!fs.existsSync(dir)){
-                fs.mkdirSync(dir);
-            }
-            
-  
-            fs.writeFile(fileName, data, (err) => {
-                if (err){
-                    console.log('Can\'n save file', err);
-                } else {
-                    setTimeout(() => {
-                        //BalanceController.setBalanceToFile();// TODO: uncomment
-                    }, 1000);
-                }
-            });
+            const tokensBalance = await web3.getAllBalances(ConfigModel.getAddress());
+            await JsonFileModel.setBalances(tokensBalance);
+
+            setTimeout(() => {
+                BalanceController.setBalanceToFile();
+            }, 1000);
+            console.log('save success');
 
         } catch(e) {
             console.log(e);

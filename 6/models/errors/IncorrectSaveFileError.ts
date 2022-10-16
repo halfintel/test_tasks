@@ -1,15 +1,15 @@
 
 
-export class IncorrectWalletError extends Error {  
+export class IncorrectSaveFileError extends Error {  
     status: number;
 
     constructor () {
-        const message = 'Incorrect wallet';
+        const message = 'Can\'n save file';
         super(message);
         Error.captureStackTrace(this, this.constructor);
     
         this.name = this.constructor.name
-        this.status = 400;
+        this.status = 500;
     }
   
     getStatus():number {

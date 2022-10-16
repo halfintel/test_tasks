@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import express from 'express';
 import { BalanceController } from './controllers/BalanceController.js';
+import { ConfigModel } from './models/ConfigModel.js';
 import { RestView } from './views/RestView.js';
 
 const app = express();
 const port = 3000;
+new ConfigModel();// init config
 
 // Routes:
 app.get('/address/:address', BalanceController.getBalance);

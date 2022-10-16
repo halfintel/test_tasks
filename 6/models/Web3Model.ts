@@ -1,63 +1,70 @@
 import Web3 from 'web3';
-import { IncorrectWalletError } from './errors/IncorrectWalletError.js';
+import Contract from 'web3-eth-contract';
 import pkg from '@mycrypto/eth-scan';
 const { getTokensBalance } = pkg;
-import fs from 'fs';
+import { IncorrectWalletError } from './errors/IncorrectWalletError.js';
+import { CoinsModel } from './CoinsModel.js';
+import { ConfigModel } from './ConfigModel.js';
+
+
+export interface tokensBalanceFilteredInterface {
+    [key:string]: string
+}
 
 
 export class Web3Model {
     web3: any;
+    Contract: any;
    
     constructor() {
-        const configJson = fs.readFileSync("./config.json", "utf8");// TODO: move to another class
-        const config = JSON.parse(configJson);
-
-        this.web3 = new Web3(Web3.givenProvider || config.web3Url);
+        this.web3 = new Web3(ConfigModel.getWeb3Url());
+        this.Contract = Contract;
+        this.Contract.setProvider(ConfigModel.getWeb3Url());
     }
 
-    async getAllBalances(walletAddress:string) {
+    async getAllBalances(walletAddress:string):Promise<tokensBalanceFilteredInterface> {
         if (!this.isAddress(walletAddress)){
             throw new IncorrectWalletError();
         }
 
 
-        const {hashOfCoins, listOfCoins} = await this.getCoins();
-        
-
-
+        const {hashOfCoins, listOfCoins} = await CoinsModel.getCoins();
         const tokensBalance = await getTokensBalance(this.web3, walletAddress, listOfCoins);
-        let tokensBalanceFiltered = {};
-       
+
+        let tokensBalanceFiltered:tokensBalanceFilteredInterface = {};
         for (let i in tokensBalance){
             if (tokensBalance[i] !== 0n){
-                tokensBalanceFiltered[ hashOfCoins[i] ] = tokensBalance[i].toString();
+                tokensBalanceFiltered[ hashOfCoins[i] ] = await this.fixBalance(tokensBalance[i], i);
             }
         }
         tokensBalanceFiltered['eth'] = await this.getEthBalance(walletAddress);
-        console.log(tokensBalanceFiltered);// TODO: remove
+
         return tokensBalanceFiltered;
     }
 
-    private async getCoins() {// TODO: move to another class and add to cache/db/file
-        const coins = await fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true')
-            .then((response) => response.json())
-            .then((data) => data.filter(obj => obj.platforms.ethereum && obj.platforms.ethereum.length > 0));
-        let hashOfCoins = {};
-        let listOfCoins:string[] = [];
-        for (let i in coins){
-            hashOfCoins[ coins[i].platforms.ethereum ] = coins[i].symbol;
-            listOfCoins.push(coins[i].platforms.ethereum);
-        }
-        return {'hashOfCoins': hashOfCoins, 'listOfCoins': listOfCoins};
-    }
-
-    private isAddress(walletAddress:string) {
+    private isAddress(walletAddress:string):boolean {
         return this.web3.utils.isAddress(walletAddress);
     }
 
-    private async getEthBalance(walletAddress:string) {
+    private async getEthBalance(walletAddress:string):Promise<string> {
         const balance = await this.web3.eth.getBalance(walletAddress);
         return this.web3.utils.fromWei(balance);
     }
 
-  }
+    private async fixBalance(balance:bigint, token:string):Promise<string> {
+        let minABI = [
+            // decimals
+            {
+                "constant":true,
+                "inputs":[],
+                "name":"decimals",
+                "outputs":[{"name":"","type":"uint8"}],
+                "type":"function"
+            }
+        ];
+        let contract = new this.Contract(minABI, token);
+        let decimals = await contract.methods.decimals().call();
+        let correctBalance = Number(balance) / 10**decimals;
+        return correctBalance.toString();
+    }
+}
